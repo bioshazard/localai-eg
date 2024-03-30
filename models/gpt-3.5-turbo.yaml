@@ -1,0 +1,37 @@
+name: gpt-3.5-turbo
+mmap: true
+parameters:
+  # model: huggingface://TheBloke/Mistral-7B-OpenOrca-GGUF/mistral-7b-openorca.Q6_K.gguf
+  model: openhermes-2.5-mistral-7b.Q6_K.gguf
+  temperature: 0.2
+  top_k: 40
+  top_p: 0.95
+template:
+  chat_message: |
+    <|im_start|>{{if eq .RoleName "assistant"}}assistant{{else if eq .RoleName "system"}}system{{else if eq .RoleName "user"}}user{{end}}
+    {{if .Content}}{{.Content}}{{end}}
+    <|im_end|>
+  chat: |
+    {{.Input}}
+    <|im_start|>assistant
+  completion: |
+    {{.Input}}
+context_size: 4096
+gpu_layers: 55
+f16: true
+stopwords:
+- <|im_end|>
+usage: |
+  curl http://localhost:8180/v1/chat/completions -H "Content-Type: application/json" -d '{
+      "model": "gpt-3.5-turbo",
+      "messages": [{"role": "user", "content": "How are you doing?", "temperature": 0.1}]
+  }'
+
+
+
+# api_1  | 7:59PM DBG GRPC(openhermes-2.5-mistral-7b.Q6_K.gguf-127.0.0.1:36049): stderr CUDA error: unknown error
+# api_1  | 7:59PM DBG GRPC(openhermes-2.5-mistral-7b.Q6_K.gguf-127.0.0.1:36049): stderr   current device: -1, in function ggml_cuda_set_device at /build/backend/cpp/llama/llama.cpp/ggml-cuda.cu:544
+# api_1  | 7:59PM DBG GRPC(openhermes-2.5-mistral-7b.Q6_K.gguf-127.0.0.1:36049): stderr   cudaGetDevice(&current_device)
+# api_1  | 7:59PM DBG GRPC(openhermes-2.5-mistral-7b.Q6_K.gguf-127.0.0.1:36049): stderr GGML_ASSERT: /build/backend/cpp/llama/llama.cpp/ggml-cuda.cu:226: !"CUDA error"
+# api_1  | 7:59PM INF [llama] Fails: could not load model: rpc error: code = Unavailable desc = error reading from server: EOF
+# api_1  | 7:59PM INF [gpt4all] Attempting to load
